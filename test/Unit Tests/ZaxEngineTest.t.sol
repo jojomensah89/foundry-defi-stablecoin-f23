@@ -20,8 +20,14 @@ contract ZaxEngineTest is Test {
 
     address public USER = makeAddr("user");
     uint256 public constant AMOUNT_COLLATERAL = 10 ether;
+    uint256 public constant AMOUNT_ZAX = 5 ether;
     uint256 public constant STARTING_ERC20_BALNCE = 100 ether;
     uint256 public constant LIQUIDATION_THRESHOLD = 50;
+    uint256 private constant LIQUIDATION_PRECISION = 100;
+    uint256 private constant MIN_HEALTH_FACTOR = 1e18;
+    uint256 private constant LIQUIDATION_BONUS = 10; // this means 10% bonus
+    uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
+    uint256 private constant PRECISION = 1e18;
 
     function setUp() public {
         deployer = new DeployZax();
@@ -82,6 +88,23 @@ contract ZaxEngineTest is Test {
         _;
     }
 
+    modifier depositedCollateralAndmintZax() {
+        vm.startPrank(USER);
+        // vm.deal(USER,AMOUNT_COLLATERAL);
+        ERC20Mock(weth).approve(address(zaxEngine), AMOUNT_COLLATERAL);
+        zaxEngine.depositCollateralAndMintZax(weth, AMOUNT_COLLATERAL, AMOUNT_ZAX);
+        // zaxEngine.depositCollateral(weth, AMOUNT_COLLATERAL);
+        vm.stopPrank();
+        _;
+    }
+
+    modifier mintZax() {
+        vm.startPrank(USER);
+        zaxEngine.mintZax(AMOUNT_ZAX);
+        vm.stopPrank();
+        _;
+    }
+
     function testRevertsWithZeroCollateral() public {
         vm.prank(USER);
         // vm.deal(USER,AMOUNT_COLLATERAL);
@@ -101,6 +124,11 @@ contract ZaxEngineTest is Test {
         vm.stopPrank();
     }
 
+    function testCanDepositCollateralWihtoutMintingZax() public depositedCollateral {
+        uint256 userZaxBalance = zax.balanceOf(USER);
+        assertEq(userZaxBalance, 0);
+    }
+
     function testCanDepositCollateralAndGetAccountInfo() public depositedCollateral {
         (uint256 totalZaxMinted, uint256 collateralValueInUsd) = zaxEngine.getAccountInformation(USER);
 
@@ -110,8 +138,66 @@ contract ZaxEngineTest is Test {
         assertEq(AMOUNT_COLLATERAL, expectedDepositAmount);
     }
 
-    // deposit Collateral a
+    // deposit Collateral and Mint Zax
+    function testDepositCollateralAndMintZax() public depositedCollateralAndmintZax {
+        uint256 userZaxBalance = zax.balanceOf(USER);
+        assertEq(userZaxBalance, AMOUNT_ZAX);
+    }
 
+    // // test Mint Zax
+    // function testCanNotMintZaxWithoutCollateralDeposit() public {
+    //     // vm.expectRevert(ZaxEngine.ZaxEngine__CollateralCanNotBeZero.selector);
+    //     vm.expectRevert();
+    //        vm.startPrank(USER);
+    //     // vm.deal(USER,AMOUNT_COLLATERAL);
+    //     ERC20Mock(weth).approve(address(zaxEngine), AMOUNT_COLLATERAL);
+    //     zaxEngine.depositCollateralAndMintZax(weth, 0,AMOUNT_ZAX);
+
+    //     // zaxEngine.mintZax(AMOUNT_ZAX);
+    //     vm.stopPrank();
+
+    //     uint256 endingUserZaxBalance = zax.balanceOf(USER);
+    //     assertEq(endingUserZaxBalance,AMOUNT_ZAX);
+    // }
+
+    function testMintZax() public {
+        vm.startPrank(USER);
+        zaxEngine.mintZax(AMOUNT_ZAX);
+        vm.stopPrank();
+
+        uint256 endingUserZaxBalance = zax.balanceOf(USER);
+        assertEq(AMOUNT_ZAX, endingUserZaxBalance);
+    }
+
+    function testCanNotMintZeroZax() public {
+        vm.expectRevert();
+        vm.startPrank(USER);
+        zaxEngine.mintZax(0);
+        vm.stopPrank();
+    }
+
+    /// test burn zax
+    function testCanNotBurnMoreThanUserHas() public {
+        vm.prank(USER);
+        vm.expectRevert();
+        zax.burn(1);
+    }
+
+    function testCanNotBurnZeroZax() public {
+        vm.expectRevert();
+        vm.startPrank(USER);
+        zaxEngine.burnZax(0);
+        vm.stopPrank();
+    }
+
+    function testBurnZax() public depositedCollateralAndmintZax {
+        vm.startPrank(USER);
+        zax.approve(address(zaxEngine), AMOUNT_ZAX);
+        zaxEngine.burnZax(AMOUNT_ZAX);
+        vm.stopPrank();
+        uint256 endingUserZaxBalance = zax.balanceOf(USER);
+        assertEq(endingUserZaxBalance, 0);
+    }
 
     /// Getter Functions
 
@@ -121,5 +207,81 @@ contract ZaxEngineTest is Test {
 
     function testLiquidationThreshold() public {
         assertEq(zaxEngine.getLiquidationThreshold(), LIQUIDATION_THRESHOLD);
+    }
+
+    function testPrecision() public {
+        assertEq(PRECISION, zaxEngine.getPrecision());
+    }
+
+    function testFeedAdditionalPrecision() public {
+        assertEq(ADDITIONAL_FEED_PRECISION, zaxEngine.getAdditionalFeedPrecision());
+    }
+
+    function testMinHealthFactor() public {
+        assertEq(MIN_HEALTH_FACTOR, zaxEngine.getMinHealthFactor());
+    }
+
+    function testLiquidationPrecision() public {
+        assertEq(LIQUIDATION_PRECISION, zaxEngine.getLiquidationPrecision());
+    }
+
+    function testGetAccountCollateralValueInUsd() public depositedCollateral {
+        uint256 userCollateralValueInUsd = zaxEngine.getUsdValue(weth, AMOUNT_COLLATERAL);
+
+        assertEq(userCollateralValueInUsd, zaxEngine.getAccountCollateralValueInUsd(USER));
+    }
+
+    function testGetUserZaxMinted() public {
+        vm.startPrank(USER);
+        zaxEngine.mintZax(AMOUNT_ZAX);
+        vm.stopPrank();
+
+        uint256 endingUserZaxBalance = zax.balanceOf(USER);
+        assertEq(zaxEngine.getUserZaxMinted(USER), endingUserZaxBalance);
+    }
+    // function testCalculateHealthFactor () public {
+    //     vm.startPrank(USER);
+    //     zaxEngine.mintZax(AMOUNT_ZAX);
+    //     vm.stopPrank();
+    //             uint256 endingUserZaxBalance = zaxEngine.getUserZaxMinted(USER);
+
+    //     zaxEngine.calculateHealthFactor();
+
+    // }
+
+    function testCollateralTokens() public {
+        address[] memory collateralTokens = zaxEngine.getCollateralTokens();
+        assertEq(weth, collateralTokens[0]);
+        assertEq(wbtc, collateralTokens[1]);
+    }
+
+    function testGetCollateralTokenPriceFeed() public {
+        address ethPriceFeed = zaxEngine.getCollateralTokensPriceFeed(weth);
+        assertEq(ethPriceFeed, ethUsdPriceFeed);
+    }
+
+    function testGetAccountCollateralValueFromInformation() public depositedCollateral {
+        (, uint256 collateralValue) = zaxEngine.getAccountInformation(USER);
+        uint256 expectedCollateralValue = zaxEngine.getUsdValue(weth, AMOUNT_COLLATERAL);
+        assertEq(collateralValue, expectedCollateralValue);
+    }
+
+    function testGetCollateralBalanceOfUser() public {
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(zaxEngine), AMOUNT_COLLATERAL);
+        zaxEngine.depositCollateral(weth, AMOUNT_COLLATERAL);
+        vm.stopPrank();
+        uint256 collateralBalance = zaxEngine.getUserCollateral(USER, weth);
+        assertEq(collateralBalance, AMOUNT_COLLATERAL);
+    }
+
+    function testGetAccountCollateralValue() public {
+        vm.startPrank(USER);
+        ERC20Mock(weth).approve(address(zaxEngine), AMOUNT_COLLATERAL);
+        zaxEngine.depositCollateral(weth, AMOUNT_COLLATERAL);
+        vm.stopPrank();
+        uint256 collateralValue = zaxEngine.getAccountCollateralValue(USER);
+        uint256 expectedCollateralValue = zaxEngine.getUsdValue(weth, AMOUNT_COLLATERAL);
+        assertEq(collateralValue, expectedCollateralValue);
     }
 }
