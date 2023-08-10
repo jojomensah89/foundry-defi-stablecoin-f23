@@ -189,10 +189,7 @@ contract ZaxEngine is ReentrancyGuard {
         address _tokenCollateralAddress,
         uint256 _amountCollateral,
         uint256 _amountZaxToBurn
-    ) external 
-     moreThanZero(_amountCollateral)
-        nonReentrant
-        {
+    ) external moreThanZero(_amountCollateral) nonReentrant {
         burnZax(_amountZaxToBurn);
         // redeemCollateral already checks health Factor
         redeemCollateral(_tokenCollateralAddress, _amountCollateral);
@@ -207,7 +204,7 @@ contract ZaxEngine is ReentrancyGuard {
         s_ZaxMinted[msg.sender] += amountZaxToMint;
 
         //if they minted too much ($150 Zax => $100 BTC)
-         _revertIfHealthFactorIsBroken(msg.sender);
+        _revertIfHealthFactorIsBroken(msg.sender);
 
         bool minted = i_zax.mint(msg.sender, amountZaxToMint);
         if (!minted) {
@@ -287,8 +284,6 @@ contract ZaxEngine is ReentrancyGuard {
             revert ZaxEngine__TransferFailed();
         }
         i_zax.burn(_amountZaxToBurn);
-
-       
     }
 
     function _redeemCollateral(address tokenCollateralAddress, uint256 amountCollateral, address from, address to)

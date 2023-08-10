@@ -9,7 +9,6 @@ import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/ERC20Mock.sol";
 import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 
-
 contract ZaxEngineTest is Test {
     DeployZax deployer;
     ZaxEngine zaxEngine;
@@ -21,13 +20,13 @@ contract ZaxEngineTest is Test {
     address wbtc;
 
     address public USER = makeAddr("user");
-    
-    uint256 public  AMOUNT_COLLATERAL = 10 ether;
-    uint256 public  AMOUNT_ZAX = 100 ether;
+
+    uint256 public AMOUNT_COLLATERAL = 10 ether;
+    uint256 public AMOUNT_ZAX = 100 ether;
     uint256 public constant STARTING_ERC20_BALANCE = 100 ether;
     uint256 public constant LIQUIDATION_THRESHOLD = 50;
     uint256 private constant LIQUIDATION_PRECISION = 100;
-     uint256 public constant STARTING_USER_BALANCE = 10 ether;
+    uint256 public constant STARTING_USER_BALANCE = 10 ether;
 
     uint256 private constant MIN_HEALTH_FACTOR = 1e18;
     uint256 private constant LIQUIDATION_BONUS = 10; // this means 10% bonus
@@ -39,12 +38,12 @@ contract ZaxEngineTest is Test {
         (zax, zaxEngine, helperConfig) = deployer.run();
         (ethUsdPriceFeed, btcUsdPriceFee, weth, wbtc,) = helperConfig.activeNetworkConfig();
 
-           if (block.chainid == 31337) {
+        if (block.chainid == 31337) {
             vm.deal(USER, STARTING_USER_BALANCE);
         }
 
         ERC20Mock(weth).mint(USER, STARTING_USER_BALANCE);
-         ERC20Mock(wbtc).mint(USER, STARTING_USER_BALANCE);
+        ERC20Mock(wbtc).mint(USER, STARTING_USER_BALANCE);
     }
 
     ///// Constructor Tests
@@ -88,9 +87,7 @@ contract ZaxEngineTest is Test {
     }
 
     //// deposit Collateral Tests
-    
 
-   
     function testRevertsWithZeroCollateral() public {
         vm.prank(USER);
         // vm.deal(USER,AMOUNT_COLLATERAL);
@@ -125,7 +122,6 @@ contract ZaxEngineTest is Test {
     }
 
     ////// deposit Collateral and Mint Zax
-    
 
     function testDepositCollateralAndMintZax() public depositedCollateralAndmintZax {
         uint256 userZaxBalance = zax.balanceOf(USER);
@@ -137,7 +133,8 @@ contract ZaxEngineTest is Test {
         // 0xe580cc6100000000000000000000000000000000000000000000000006f05b59d3b20000
         // 0xe580cc6100000000000000000000000000000000000000000000003635c9adc5dea00000
         (, int256 price,,,) = MockV3Aggregator(ethUsdPriceFeed).latestRoundData();
-        AMOUNT_ZAX = (AMOUNT_COLLATERAL * (uint256(price) * zaxEngine.getAdditionalFeedPrecision())) / zaxEngine.getPrecision();
+        AMOUNT_ZAX =
+            (AMOUNT_COLLATERAL * (uint256(price) * zaxEngine.getAdditionalFeedPrecision())) / zaxEngine.getPrecision();
 
         vm.startPrank(USER);
         ERC20Mock(weth).approve(address(zaxEngine), AMOUNT_COLLATERAL);
@@ -289,7 +286,7 @@ contract ZaxEngineTest is Test {
         assertEq(collateralValue, expectedCollateralValue);
     }
 
-     ////////////////////////
+    ////////////////////////
     // healthFactor Tests //
     ////////////////////////
 
@@ -302,7 +299,8 @@ contract ZaxEngineTest is Test {
         // 10,000 / 100 = 100 health factor
         assertEq(healthFactor, expectedHealthFactor);
     }
-      function testHealthFactorCanGoBelowOne() public depositedCollateralAndmintZax {
+
+    function testHealthFactorCanGoBelowOne() public depositedCollateralAndmintZax {
         int256 ethUsdUpdatedPrice = 18e8; // 1 ETH = $18
         // Rememeber, we need $150 at all times if we have $100 of debt
 
@@ -313,9 +311,8 @@ contract ZaxEngineTest is Test {
         assert(userHealthFactor == 0.9 ether);
     }
 
-
     /// modifiers
-     modifier depositedCollateral() {
+    modifier depositedCollateral() {
         vm.startPrank(USER);
         // vm.deal(USER,AMOUNT_COLLATERAL);
         ERC20Mock(weth).approve(address(zaxEngine), AMOUNT_COLLATERAL);
@@ -340,5 +337,4 @@ contract ZaxEngineTest is Test {
         vm.stopPrank();
         _;
     }
-
 }

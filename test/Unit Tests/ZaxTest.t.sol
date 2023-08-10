@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.19;
+
 import {Test, console} from "forge-std/Test.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {Zax} from "../../src/Zax.sol";
 
-contract ZaxTest is StdCheats,Test{
+contract ZaxTest is StdCheats, Test {
     Zax zax;
 
-
-      function setUp() public {
+    function setUp() public {
         zax = new Zax();
     }
-     function testMustMintMoreThanZero() public {
+
+    function testMustMintMoreThanZero() public {
         vm.prank(zax.owner());
         vm.expectRevert();
         zax.mint(address(this), 0);
