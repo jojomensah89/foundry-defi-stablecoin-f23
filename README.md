@@ -1,14 +1,15 @@
 # Foundry DeFi Stablecoin(Zax)
 
-1. Relative Stavility: Anchored or Pegged -> $1.00
-   1.Chainlink Price feed
-   2.Set a function to exchange ETH & BTC for Zax
-2.Stability Mechanism(Minting): Algorithmic(Decentralized)
-   1.Users can only max Zax equivalent to half their collateral(BTC & ETH) deposited
-3. Collateral: Exogenous (crypto coins)
+- Relative Stavility: Anchored or Pegged -> $1.00
+   -Chainlink Price feed
+   -Set a function to exchange ETH & BTC for Zax
+   
+- Stability Mechanism(Minting): Algorithmic(Decentralized)
+   -Users can only max Zax equivalent to half their collateral(BTC & ETH) deposited
+- Collateral: Exogenous (crypto coins)
   [ Exogenous means “external to” and endogenous means “from within”. “Exogenous” collateral refers to collateral that has primary use cases outside the stablecoin project. “Endogenous” refers to collateral that is created specifically for the purpose of being collateral.](https://blog.chain.link/stablecoins-and-proof-of-reserve/#:~:text=Exogenous%20means%20“external%20to”%20and,the%20purpose%20of%20being%20collateral).
-   1.wETH
-   2.wBTC    
+   -wETH
+   -wBTC    
 
 ## Getting Started
 
