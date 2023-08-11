@@ -21,7 +21,7 @@
 ## Quickstart
 
 ```
-git clone 
+git clone https://github.com/jojomensah89/foundry-defi-stablecoin-f23.git
 cd foundry-defi-stablecoin-f23
 forge build
 ```
@@ -48,7 +48,7 @@ make deploy
 
 ## Testing
 
-We talk about 4 test tiers in the video. 
+
 
 1. Unit
 2. Integration
