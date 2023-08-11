@@ -56,7 +56,20 @@ contract Invariants is StdInvariant, Test {
         console.log("wbtc value:", wbtcValue);
         console.log(" totalCollateralValueInUsd:", totalCollateralValueInUsd);
         console.log(" totalSupplyOfZax:", totalSupplyOfZax);
+        console.log("Times mint is called:", handler.numTimesMintIsCalled());
+        console.log("Times UpdatePrice is called:", handler.numTimesUpdatePriceIsCalled());
+        // console.log("maxCollateralToRedeem:", handler.maxCollateralToRedeem());
+        // console.log("numTimesDepositIsCalled:", handler.numTimesDepositIsCalled());
+        // console.log("Times mint is called:", handler.numTimesMintIsCalled);
 
         assert(totalCollateralValueInUsd >= totalSupplyOfZax);
+    }
+
+    function invariant_gettersShouldNotRevert() public view {
+        /// use ' forge inspect ZaxEngine methods" to get all the functions of the contract
+        // zaxEngine.getAccountCollateralValue();
+        zaxEngine.getLiquidationPrecision();
+        zaxEngine.getAdditionalFeedPrecision();
+        // zaxEngine.getCollateralTokensPriceFeed(weth);
     }
 }

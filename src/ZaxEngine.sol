@@ -27,6 +27,7 @@ import {Zax} from "./Zax.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {OracleLib} from "./libraries/OracleLib.sol";
 
 /**
  * @title ZaxEngine
@@ -58,6 +59,11 @@ contract ZaxEngine is ReentrancyGuard {
     error ZaxEngine__MintFailed();
     error ZaxEngine__HealthFactorOk();
     error ZaxEngine_HealthFactorNotImproved();
+
+    //////////////////
+    // Type       //
+    //////////////////
+    using OracleLib for AggregatorV3Interface;
 
     ///////////////////
     //State Variables//
@@ -352,7 +358,7 @@ contract ZaxEngine is ReentrancyGuard {
     function getTokenAmountFromUsd(address _token, uint256 _usdAmountInWei) public view returns (uint256) {
         // get price of token(Eg: ETH)
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_tokenToPriceFeed[_token]);
-        (, int256 price,,,) = priceFeed.latestRoundData();
+        (, int256 price,,,) = priceFeed.staleCheckLatestRoundData();
 
         return (_usdAmountInWei * PRECISION) / (uint256(price) * ADDITIONAL_FEED_PRECISION);
     }
@@ -381,7 +387,7 @@ contract ZaxEngine is ReentrancyGuard {
     function getUsdValue(address token, uint256 amount) public view returns (uint256) {
         // User the AggregatorV3Interface to get the priceFeed in Usd of a Particular token
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_tokenToPriceFeed[token]);
-        (, int256 price,,,) = priceFeed.latestRoundData();
+        (, int256 price,,,) = priceFeed.staleCheckLatestRoundData();
 
         // If the price of eth is $1000, the value returned by AggregatorV3Interface will be 1000 * 1e8
         // Hence multiply ADDITIONAL_FEED_PRECISION = 1e10 to get 1e18 to have equal *unit
