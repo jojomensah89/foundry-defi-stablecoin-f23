@@ -3,19 +3,16 @@
 - Relative Stavility: Anchored or Pegged -> $1.00
    -Chainlink Price feed
    -Set a function to exchange ETH & BTC for Zax
-   
+
 - Stability Mechanism(Minting): Algorithmic(Decentralized)
    -Users can only max Zax equivalent to half their collateral(BTC & ETH) deposited
 - Collateral: Exogenous (crypto coins)
-  [ Exogenous means “external to” and endogenous means “from within”. “Exogenous” collateral refers to collateral that has primary use cases outside the stablecoin project. “Endogenous” refers to collateral that is created specifically for the purpose of being collateral.](https://blog.chain.link/stablecoins-and-proof-of-reserve/#:~:text=Exogenous%20means%20“external%20to”%20and,the%20purpose%20of%20being%20collateral).
+  [Exogenous means “external to” and endogenous means “from within”. “Exogenous” collateral refers to collateral that has primary use cases outside the stablecoin project. “Endogenous” refers to collateral that is created specifically for the purpose of being collateral.](https://blog.chain.link/stablecoins-and-proof-of-reserve/#:~:text=Exogenous%20means%20“external%20to”%20and,the%20purpose%20of%20being%20collateral).
    -wETH
-   -wBTC    
-- [Foundry DeFi Stablecoin](#foundry-defi-stablecoin)
-- [About](#about)
-- [Getting Started](#getting-started)
-## Getting Started
+   -wBTC
 
 ### Requirements
+
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
   - You'll know you did it right if you can run `git --version` and you see a response like `git version x.x.x`
 - [foundry](https://getfoundry.sh/)
@@ -51,14 +48,12 @@ make deploy
 
 ## Testing
 
-
-
 1. Unit
 2. Integration
 3. Forked
 4. Staging
 
-In this repo we cover #1 and Fuzzing. 
+In this repo we cover #1 and Fuzzing.
 
 ```
 forge test
@@ -70,12 +65,11 @@ forge test
 forge coverage
 ```
 
-and for coverage based testing: 
+and for coverage based testing:
 
 ```
 forge coverage --report debug
 ```
-
 
 # Deployment to a testnet or mainnet
 
@@ -99,7 +93,6 @@ Head over to [faucets.chain.link](https://faucets.chain.link/) and get some tesn
 make deploy ARGS="--network sepolia"
 ```
 
-
 ## Estimate gas
 
 You can estimate how much gas things cost by running:
@@ -110,11 +103,10 @@ forge snapshot
 
 And you'll see and output file called `.gas-snapshot`
 
-
 # Formatting
 
-
 To run code formatting:
+
 ```
 forge fmt
 ```
